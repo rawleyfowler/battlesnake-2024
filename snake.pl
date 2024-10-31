@@ -6,9 +6,9 @@ use BattleSnake;
 our $VERSION = '1';
 
 post '/move' => sub {
-    my $c     = shift;
-    my $board = $c->req->json;
-    my $move  = BattleSnake->move($board);
+    my $c    = shift;
+    my $game = $c->req->json;
+    my $move = BattleSnake->move($game);
     $c->render( json => $move );
 };
 
