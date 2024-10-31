@@ -9,6 +9,7 @@ post '/move' => sub {
     my $c    = shift;
     my $game = $c->req->json;
     my $move = BattleSnake->move($game);
+    app->log->info( "MOVING! " . $move->{move} . " cost: " . $move->{cost} );
     $c->render( json => $move );
 };
 
@@ -24,7 +25,7 @@ get '/' => sub {
     );
 };
 
-get '/end' => sub {
+post '/end' => sub {
     app->log->info('Game over...');
     shift->render( json => +{ good => 'game' } );
 };
