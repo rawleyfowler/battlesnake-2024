@@ -9,7 +9,12 @@ post '/move' => sub {
     my $c    = shift;
     my $game = $c->req->json;
     my $move = BattleSnake->move($game);
-    app->log->info( "MOVING! " . $move->{move} . " cost: " . $move->{cost} );
+    app->log->info( "MOVING! "
+          . $move->{move}
+          . " cost: "
+          . $move->{cost}
+          . ", reason: "
+          . ( $move->{reason} // 'UNKNOWN' ) );
     $c->render( json => $move );
 };
 
