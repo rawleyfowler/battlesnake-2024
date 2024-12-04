@@ -40,7 +40,7 @@ sub move {
         push @$snakes, $snake;
     }
     my $opponent_potentials =
-      [ _make_opponent_potentials( $heads, $width, $height ) ];
+      [ _make_opponent_potentials( $snakes, $width, $height ) ];
     my $potentials = [
         _make_potentials(
             $me->{head},           $me->{body}->[1]->{x},
@@ -337,7 +337,7 @@ sub _make_opponent_potentials {
 
     push @potentials,
       _make_potentials(
-        $_,
+        $_->{head},
         $_->{body}->[1]->{x},
         $_->{body}->[1]->{y},
         $width, $height
