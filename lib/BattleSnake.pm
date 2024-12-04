@@ -323,13 +323,7 @@ sub _make_potentials {
     }
 
     @potentials = grep {
-        if ( $_->{x} ) {
-            return 0 if $_->{x} == $body_x && $y == $body_y;
-        }
-        else {
-            return 0 if $_->{y} == $body_y && $x == $body_x;
-        }
-
+        return 0 if $_->{x} == $body_x && $_->{y} == $body_y;
         return 1;
     } @potentials;
 
