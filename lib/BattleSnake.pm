@@ -358,7 +358,7 @@ sub _make_opponent_potentials {
     my @potentials;
 
     push @potentials,
-      _make_potential
+      _make_potentials(
         $_,
         $_->{snake}->{body}->[1]->{x},
         $_->{snake}->{body}->[1]->{y},
