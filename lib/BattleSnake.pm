@@ -12,8 +12,8 @@ use DDP;
 
 const my $SNAKE_NAME                => 'swift_perler';
 const my $OPPONENT_POTENTIAL_FACTOR => 1.2;
-const my $SNAKE_SELF_FOLLOWING_COST => 45;
-const my $SNAKE_OPPO_FOLLOWING_COST => 60;
+const my $SNAKE_SELF_FOLLOWING_COST => 70;
+const my $SNAKE_OPPO_FOLLOWING_COST => 100;
 
 sub _make_potentials;
 sub _make_opponent_potentials;
@@ -82,6 +82,23 @@ sub move {
     }
 
     return $move;
+}
+
+sub _can_eat {
+    my ( $snake, $food_lookup, $width, $height ) = @_;
+    my @potentials = _make_potentials(
+        $snake->{head},
+        $snake->{body}->[1]->{x},
+        $snake->{body}->[1]->{y},
+        $width, $height
+    )->@*;
+
+    for (@potentials) {
+        my $key = $_->{x} . ':' . $_->{y};
+        return 1 if ( $food_lookup->{$key} );
+    }
+
+    return 0;
 }
 
 sub _calculate_movement_cost {
@@ -205,9 +222,15 @@ sub _evaluate_potential_option {
     }
 
     # Following tails
-    elsif ( $opponent_tail_lookup->{$key} ) {
-        push @moves,
-          +{ cost => $SNAKE_OPPO_FOLLOWING_COST, move => $option->{dir} };
+    elsif ( my $opp = $opponent_tail_lookup->{$key} ) {
+        if ( _can_eat( $opp, $food_lookup, $width, $height ) ) {
+            push @moves,
+              +{ cost => $SNAKE_OPPO_FOLLOWING_COST, move => $option->{dir} };
+        }
+        else {
+            push @moves,
+              +{ cost => $SNAKE_OPPO_FOLLOWING_COST, move => $option->{dir} };
+        }
     }
     elsif ( $key eq $me_tail_key ) {
         push @moves,
