@@ -230,7 +230,7 @@ sub _evaluate_potential_option {
         else {
             push @moves,
               +{ cost => $SNAKE_OPPO_FOLLOWING_COST, move => $option->{dir} }
-               unless $opponent_potentials_lookup->{$key};
+              unless $opponent_potentials_lookup->{$key};
         }
     }
     elsif ( $key eq $me_tail_key ) {
@@ -257,7 +257,7 @@ sub _evaluate_potential_option {
     if ( my $head_to_head_snake = $opponent_potentials_lookup->{$key} ) {
         if ( $head_to_head_snake->{length} >= $me->{length} ) {
             push @moves,
-              +
+              +{
                 cost   => 999,
                 move   => $option->{dir},
                 reason => 'HEAD TO HEAD WITH SNAKE BIGGER THAN ME'
