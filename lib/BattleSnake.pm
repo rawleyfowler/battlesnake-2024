@@ -333,7 +333,7 @@ sub _make_potentials {
         push @potentials, { %$head, dir => 'left', x => $x - 1 };
     }
 
-    if ( $x <= $usable_width ) {
+    if ( $x < $usable_width ) {
         push @potentials, { %$head, dir => 'right', x => $x + 1 };
     }
 
@@ -341,14 +341,12 @@ sub _make_potentials {
         push @potentials, { %$head, dir => 'down', y => $y - 1 };
     }
 
-    if ( $y <= $usable_height ) {
+    if ( $y < $usable_height ) {
         push @potentials, { %$head, dir => 'up', y => $y + 1 };
     }
 
-    @potentials = grep {
-        0 if $_->{x} == $body_x && $_->{y} == $body_y;
-        1;
-    } @potentials;
+    @potentials =
+      grep { $_->{x} == $body_x && $_->{y} == $body_y ? 0 : 1; } @potentials;
 
     return @potentials;
 }
