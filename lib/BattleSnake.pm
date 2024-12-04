@@ -114,7 +114,7 @@ sub _calculate_movement_cost {
         my $opp        = $opponent_potentials_lookup->{$_};
         my $multiplier = 1;
 
-        if ( $opp->{length} > $me->{length} ) {
+        if ( $opp->{length} >= $me->{length} ) {
             $multiplier = 2;
         }
         else {
@@ -181,11 +181,7 @@ sub _is_death_trap {
         }
     }
 
-    if ($all_bad) {
-        return 1;
-    }
-
-    return 0;
+    return $all_bad;
 }
 
 sub _evaluate_potential_option {
@@ -247,12 +243,12 @@ sub _evaluate_potential_option {
             if ( $food_lookup->{$key} ) {
 
                 # Food + Murder == Very good
-                push @moves, +{
-                    cost => 1,
-                    move => $option->{dir},
-
+                push @moves,
+                  +{
+                    cost   => 1,
+                    move   => $option->{dir},
                     reason => 'MURDER + FOOD'
-                };
+                  };
             }
             else {
                 # Fairly low cost, since killing worms is probably a good thing.
@@ -287,7 +283,7 @@ sub _evaluate_potential_option {
                 )
               )
             {
-                $move->{cost} = 999;
+                $move->{cost} = 1000;
             }
         }
     }
