@@ -306,7 +306,6 @@ sub _make_potentials {
     my $y = $head->{y};
 
     my @potentials;
-
     if ( $x > 0 ) {
         push @potentials, { %$head, dir => 'left', x => $x - 1 };
     }
@@ -322,6 +321,17 @@ sub _make_potentials {
     if ( $y <= $usable_height ) {
         push @potentials, { %$head, dir => 'up', y => $y + 1 };
     }
+
+    @potentials = grep {
+        if ( $_->{x} ) {
+            return 0 if $_->{x} == $body_x && $y == $body_y;
+        }
+        else {
+            return 0 if $_->{y} == $body_y && $x == $body_x;
+        }
+
+        return 1;
+    } @potentials;
 
     return @potentials;
 }
