@@ -298,6 +298,10 @@ sub _make_potentials {
     my $usable_width  = $width - 1;
     my $usable_height = $height - 1;
 
+    if ( not defined $height ) {
+        Carp::cluck("Somehow height is undef!");
+    }
+
     my $x = $head->{x};
     my $y = $head->{y};
 
@@ -323,7 +327,7 @@ sub _make_potentials {
 }
 
 sub _make_opponent_potentials {
-    my ( $heads, $snake, $width, $height ) = @_;
+    my ( $heads, $width, $height ) = @_;
 
     my @potentials;
 
