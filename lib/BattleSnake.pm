@@ -12,8 +12,8 @@ use DDP;
 
 const my $SNAKE_NAME                => 'swift_perler';
 const my $OPPONENT_POTENTIAL_FACTOR => 1.2;
-const my $SNAKE_SELF_FOLLOWING_COST => 29;
-const my $SNAKE_OPPO_FOLLOWING_COST => 29;
+const my $SNAKE_SELF_FOLLOWING_COST => 45;
+const my $SNAKE_OPPO_FOLLOWING_COST => 60;
 
 sub _make_potentials;
 sub _make_opponent_potentials;
@@ -60,10 +60,10 @@ sub move {
         } ( @$snakes, $me )
     };
 
-    my $snake_tail_lookup = {};
-    for my $snake ( ( @$snakes, $me ) ) {
+    my $opponent_tail_lookup = {};
+    for my $snake ( (@$snakes) ) {
         my $pos = $snake->{body}->[-1];
-        $snake_tail_lookup->{ $pos->{x} . ':' . $pos->{y} } = $snake;
+        $opponent_tail_lookup->{ $pos->{x} . ':' . $pos->{y} } = $snake;
     }
 
     my $food_lookup = { map { ( ( $_->{x} . ':' . $_->{y} ) => 1 ) } @$food };
@@ -72,7 +72,7 @@ sub move {
         my $tmp_move =
           _evaluate_potential_option( $potential, $me,
             $opponent_potential_lookup, $snake_body_lookup,
-            $snake_tail_lookup, $snakes, $food_lookup, 1, $width, $height );
+            $opponent_tail_lookup, $snakes, $food_lookup, 1, $width, $height );
         if ( !$move ) {
             $move = $tmp_move;
         }
@@ -85,11 +85,11 @@ sub move {
 }
 
 sub _calculate_movement_cost {
-    my ( $me, $starting_position, $snake_tail_lookup,
+    my ( $me, $starting_position, $opponent_tail_lookup,
         $opponent_potentials_lookup, $food_lookup, $direction )
       = @_;
 
-    my $cost         = 20;
+    my $cost         = 10;
     my $end_position = {%$starting_position};
 
     $end_position->{y}++
@@ -138,9 +138,9 @@ sub _apply_move {
     my $snake = {%$old_snake};
     state %move_map = (
         'left'  => [ -1, 0 ],
-        'right' => [  1, 0 ],
-        'up'    => [  0, 1 ],
-        'down'  => [  0, -1 ]
+        'right' => [ 1,  0 ],
+        'up'    => [ 0,  1 ],
+        'down'  => [ 0,  -1 ]
     );
     my ( $dx, $dy ) = @{ $move_map{ $move->{move} } };
     $snake->{body}->[1] = { %{ $snake->{head} } };
@@ -152,7 +152,7 @@ sub _apply_move {
 
 sub _is_death_trap {
     my ( $move, $me, $opponent_potentials_lookup, $snake_body_lookup,
-        $snake_tail_lookup, $snakes, $food_lookup, $width, $height )
+        $opponent_tail_lookup, $snakes, $food_lookup, $width, $height )
       = @_;
 
     my $m          = $move;
@@ -170,7 +170,7 @@ sub _is_death_trap {
         my $answer = _evaluate_potential_option(
             $option,                     $new_snake,
             $opponent_potentials_lookup, $snake_body_lookup,
-            $snake_tail_lookup,          $snakes,
+            $opponent_tail_lookup,       $snakes,
             $food_lookup,                0,
             $width,                      $height
         );
@@ -192,43 +192,43 @@ sub _evaluate_potential_option {
     my (
         $option,                     $me,
         $opponent_potentials_lookup, $snake_body_lookup,
-        $snake_tail_lookup,          $snakes,
+        $opponent_tail_lookup,       $snakes,
         $food_lookup,                $death_trap_test,
         $width,                      $height
     ) = @_;
 
     my $key = $option->{x} . ':' . $option->{y};
+    my $me_tail_key =
+      $me->{body}->[-1]->{x} . ':' . $me->{body}->[-1]->{y};
     my @moves;
 
-    if ( $snake_body_lookup->{$key} && !$snake_tail_lookup->{$key} ) {
+    if ( $snake_body_lookup->{$key} && !$opponent_tail_lookup->{$key} ) {
 
         # Very bad option, guranteed death
         push @moves, +{ cost => 1000, move => $option->{dir} };
     }
 
     # Following tails
-    elsif ( my $following = $snake_tail_lookup->{$key} ) {
-        if (   $following->{name} eq $SNAKE_NAME
-            && $following->{length} > 2 )
-        {
-            # Following our own tail
-            push @moves,
-              +{ cost => $SNAKE_SELF_FOLLOWING_COST, move => $option->{dir} };
-        }
-
-        if ( $following->{name} ne $SNAKE_NAME ) {
-            push @moves,
-              +{ cost => $SNAKE_OPPO_FOLLOWING_COST, move => $option->{dir} };
-        }
+    elsif ( $opponent_tail_lookup->{$key} ) {
+        push @moves,
+          +{ cost => $SNAKE_OPPO_FOLLOWING_COST, move => $option->{dir} };
+    }
+    elsif ( $key eq $me_tail_key ) {
+        push @moves,
+          +{
+            cost => $SNAKE_SELF_FOLLOWING_COST,
+            move => $option->{dir}
+          };
     }
     else {
+
         # Moderate option, safety not guranteed
         push @moves,
           +{
             cost => _calculate_movement_cost(
-                $me,                $option,
-                $snake_tail_lookup, $opponent_potentials_lookup,
-                $food_lookup,       $option->{dir}
+                $me,                   $option,
+                $opponent_tail_lookup, $opponent_potentials_lookup,
+                $food_lookup,          $option->{dir}
             ),
             move => $option->{dir}
           };
@@ -281,7 +281,7 @@ sub _evaluate_potential_option {
                 _is_death_trap(
                     $move,                       $me,
                     $opponent_potentials_lookup, $snake_body_lookup,
-                    $snake_tail_lookup,          $snakes,
+                    $opponent_tail_lookup,       $snakes,
                     $food_lookup,                $width,
                     $height
                 )
