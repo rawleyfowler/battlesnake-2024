@@ -85,20 +85,13 @@ sub move {
 }
 
 sub _can_eat {
-    my ( $snake, $food_lookup, $width, $height ) = @_;
-    my @potentials = _make_potentials(
-        $snake->{head},
-        $snake->{body}->[1]->{x},
-        $snake->{body}->[1]->{y},
-        $width, $height
-    )->@*;
+    my ( $potentials, $food_lookup, $width, $height ) = @_;
 
-    for (@potentials) {
-        my $key = $_->{x} . ':' . $_->{y};
-        return 1 if ( $food_lookup->{$key} );
+    for ( keys %$potentials ) {
+        return 0 if ( $food_lookup->{$_} );
     }
 
-    return 0;
+    return 1;
 }
 
 sub _calculate_movement_cost {
@@ -223,7 +216,13 @@ sub _evaluate_potential_option {
 
     # Following tails
     elsif ( my $opp = $opponent_tail_lookup->{$key} ) {
-        if ( _can_eat( $opp, $food_lookup, $width, $height ) ) {
+        if (
+            _can_eat(
+                $opponent_potentials_lookup,
+                $food_lookup, $width, $height
+            )
+          )
+        {
             push @moves,
               +{ cost => $SNAKE_OPPO_FOLLOWING_COST, move => $option->{dir} };
         }
