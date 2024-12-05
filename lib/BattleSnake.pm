@@ -12,8 +12,8 @@ use DDP;
 
 const my $SNAKE_NAME                => 'swift_perler';
 const my $OPPONENT_POTENTIAL_FACTOR => 1.2;
-const my $SNAKE_SELF_FOLLOWING_COST => 70;
-const my $SNAKE_OPPO_FOLLOWING_COST => 100;
+const my $SNAKE_SELF_FOLLOWING_COST => 35;
+const my $SNAKE_OPPO_FOLLOWING_COST => 40;
 
 sub _make_potentials;
 sub _make_opponent_potentials;
@@ -235,8 +235,9 @@ sub _evaluate_potential_option {
     elsif ( $key eq $me_tail_key ) {
         push @moves,
           +{
-            cost => $SNAKE_SELF_FOLLOWING_COST,
-            move => $option->{dir}
+            cost   => $SNAKE_SELF_FOLLOWING_COST,
+            move   => $option->{dir},
+            reason => 'FOLLOW TAIL'
           };
     }
     else {
@@ -250,7 +251,8 @@ sub _evaluate_potential_option {
                 $food_lookup,          $option->{dir}
             ),
             move => $option->{dir}
-          };
+          }
+          unless $opponent_potentials_lookup->{$key};
     }
 
     if ( my $head_to_head_snake = $opponent_potentials_lookup->{$key} ) {
